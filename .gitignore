@@ -52,3 +52,5 @@ data/raw/**
 # Allow the compiled dataset to be committed
 !data/dataset.csv
 !data/sampling_plan.csv
+
+docs/project

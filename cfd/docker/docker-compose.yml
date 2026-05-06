@@ -1,0 +1,23 @@
+# ApexFlow OpenFOAM environment (ESI OpenFOAM v2512)
+# Usage from repo root:
+#   ./scripts/cfd-shell.sh
+
+services:
+  cfd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: apexflow-cfd:v2512
+    container_name: apexflow-cfd
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    volumes:
+      - ../..:/workspace
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    environment:
+      - HOME=/tmp
+    # Force the shell to start in /workspace; ESI's entrypoint otherwise
+    # drops us in /home/openfoam regardless of working_dir.
+    entrypoint: ["/bin/bash"]
+    command: ["-c", "cd /workspace && exec /bin/bash"]
