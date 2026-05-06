@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OpenFOAM — never commit simulation outputs
+data/raw/run_*/
+cfd/cases/*/[0-9]*/
+cfd/cases/*/processor*/
+cfd/cases/*/postProcessing/
+cfd/cases/*/constant/polyMesh/
+cfd/cases/*/log.*
+cfd/cases/*.foam
+
+# ML artifacts
+*.pt
+*.pth
+*.ckpt
+wandb/
+mlruns/
+checkpoints/
+
+# Large data — keep dataset.csv tracked, ignore raw runs
+data/raw/**
+!data/raw/.gitkeep
+
+# Allow the compiled dataset to be committed
+!data/dataset.csv
+!data/sampling_plan.csv
