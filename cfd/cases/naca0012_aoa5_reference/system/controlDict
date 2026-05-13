@@ -1,0 +1,57 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// ************************************************************************* //
+
+application     simpleFoam;
+
+startFrom       startTime;
+startTime       0;
+
+stopAt          endTime;
+endTime         5000;
+
+deltaT          1;
+
+writeControl    timeStep;
+writeInterval   500;
+purgeWrite      2;
+
+writeFormat     ascii;
+writePrecision  8;
+
+runTimeModifiable true;
+
+// ── Post-processing: force coefficients ───────────────────────────────────
+functions
+{
+    forceCoeffs
+    {
+        type            forceCoeffs;
+        libs            (forces);
+
+        writeControl    timeStep;
+        writeInterval   50;
+        log             true;
+
+        patches         (airfoil);
+        rho             rhoInf;
+        rhoInf          1;
+
+        // AoA = 5°: drag along freestream, lift perpendicular
+        liftDir         (-0.08716  0.99619 0);
+        dragDir         ( 0.99619  0.08716 0);
+        pitchAxis       (0 0 1);
+        CofR            (0.25 0 0);  // quarter-chord
+
+        magUInf         1;
+        lRef            1;
+        Aref            0.1;  // chord × span = 1.0 × 0.1 m²
+    }
+}
+
+// ************************************************************************* //

@@ -1,0 +1,13 @@
+#!/bin/bash
+# Remove all generated files; keeps 0/, airfoil.dat, and scripts.
+set -euo pipefail
+cd "$(dirname "$0")"
+
+rm -rf constant/polyMesh
+rm -rf postProcessing
+rm -f  airfoil_mesh.msh checkMesh.log simpleFoam.log
+
+# Remove solver time directories (all except 0/)
+find . -maxdepth 1 -name '[0-9]*' -type d ! -name '0' -exec rm -rf {} + 2>/dev/null || true
+
+echo "Case cleaned."

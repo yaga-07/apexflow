@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-numpy \
     python3-scipy \
     python3-yaml \
+    python3-gmsh \
     vim \
     less \
     && rm -rf /var/lib/apt/lists/*

@@ -1,0 +1,62 @@
+#!/bin/bash
+# Run the full NACA 0012 AoA=5° reference case.
+# Execute this inside the ApexFlow CFD container:
+#   ./scripts/cfd-shell.sh          # from repo root → drops into /workspace
+#   cd cfd/cases/naca0012_aoa5_reference && ./Allrun
+
+set -eo pipefail
+cd "$(dirname "$0")"
+
+# ── OpenFOAM environment ───────────────────────────────────────────────────
+# When run from cfd-shell.sh the environment is already live — don't re-source
+# (double-sourcing corrupts bash's variable-context stack → pop_var_context).
+if ! command -v simpleFoam &>/dev/null; then
+    echo "ERROR: simpleFoam not found. Run this script from inside the container:"
+    echo "  ./scripts/cfd-shell.sh   # from repo root"
+    exit 1
+fi
+
+# ── Verify gmsh is available ───────────────────────────────────────────────
+if ! python3 -c "import gmsh" 2>/dev/null; then
+    echo "ERROR: python3-gmsh not found. Rebuild the Docker image:"
+    echo "  cd cfd/docker && docker compose build"
+    exit 1
+fi
+
+# ── Step 1: Generate gmsh mesh ─────────────────────────────────────────────
+echo "=== Generating mesh (gmsh) ==="
+python3 mesh_gen.py
+
+# ── Step 2: Convert to OpenFOAM polyMesh ──────────────────────────────────
+echo "=== Converting mesh (gmshToFoam) ==="
+gmshToFoam airfoil_mesh.msh 2>&1 | tail -20
+
+# ── Step 3: Fix patch types (wall, empty) ─────────────────────────────────
+echo "=== Fixing patch types ==="
+python3 fix_boundary.py
+
+# ── Step 4: Mesh quality check ─────────────────────────────────────────────
+echo "=== Checking mesh ==="
+checkMesh 2>&1 | tee checkMesh.log
+echo "  → full log in checkMesh.log"
+
+# ── Step 5: Renumber for solver efficiency ─────────────────────────────────
+echo "=== Renumbering mesh ==="
+renumberMesh -overwrite 2>&1 | tail -5
+
+# ── Step 6: Solve ──────────────────────────────────────────────────────────
+echo "=== Running simpleFoam (endTime=5000, residualControl=1e-6) ==="
+simpleFoam 2>&1 | tee simpleFoam.log
+
+# ── Step 7: Report Cl / Cd ─────────────────────────────────────────────────
+echo ""
+echo "=== Force coefficients (last 3 lines) ==="
+COEFFS=$(find postProcessing -name "forceCoeffs.dat" 2>/dev/null | head -1)
+if [ -n "$COEFFS" ]; then
+    tail -3 "$COEFFS"
+else
+    echo "(postProcessing not found — check simpleFoam.log)"
+fi
+
+echo ""
+echo "Target: Cl ≈ 0.55  (NACA 0012, AoA=5°, Re=3e6)"

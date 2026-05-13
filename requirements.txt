@@ -21,5 +21,8 @@ tqdm>=4.66.0
 # MCP server
 mcp>=0.9.0
 
+# Mesh generation
+gmsh>=4.11.0
+
 # Testing
 pytest>=8.0.0
